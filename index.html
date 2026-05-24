@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>NR1 - Rally Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        body { background: #111827; color: #f3f4f6; font-family: sans-serif; padding: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .panel { background: #1f2937; padding: 12px; border-radius: 10px; }
+        .field-group { position: relative; margin-bottom: 6px; }
+        input, select { background: #0f172a; border: 1px solid #374151; color: white; padding: 5px; width: 100%; border-radius: 4px; font-size: 0.7rem; }
+        /* Style spécifique pour les ratios */
+        .ratio-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 5px; margin-bottom: 5px; }
+        .ratio-container input { text-align: center; }
+        .suggestions { position: absolute; z-index: 10; background: #1e293b; width: 100%; border-radius: 4px; max-height: 120px; overflow-y: auto; border: 1px solid #374151; display: none; }
+        .suggestions div { padding: 5px; cursor: pointer; font-size: 0.7rem; }
+        .suggestions div:hover { background: #3b82f6; }
+        .final-box { background: #020617; color: #38bdf8; padding: 8px; border-radius: 6px; font-family: monospace; white-space: pre-wrap; font-size: 0.7rem; margin-top: 10px; border: 1px solid #1e293b; min-height: 120px; }
+    </style>
+</head>
+<body>
+
+<div class="grid" id="main-grid"></div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyA8edMWQreJMKrbS8MuowKZl58x7W5vfBU",
+        authDomain: "nr1-vikings.firebaseapp.com",
+        databaseURL: "https://nr1-vikings-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "nr1-vikings",
+        storageBucket: "nr1-vikings.firebasestorage.app",
+        messagingSenderId: "1042283854890",
+        appId: "1:1042283854890:web:84414b7afed626191ed753"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    let players = [];
+    const heroesList = ["Jabel", "Quinn", "Chenko", "Zoe", "Howard", "Marlin", "Amane", "Teonwoo"];
+
+    db.ref('alliance_database').on('value', snap => {
+        const data = snap.val() || {};
+        players = Object.values(data).map(m => m.name);
+        render();
+    });
+
+    function render() {
+        const grid = document.getElementById('main-grid');
+        const types = ["⚔️ ATTACK1", "⚔️ ATTACK2", "🛡 DEFENSE"];
+        const defaultLeaders = ["Yaromar", "Praga_13", "Pewn"];
+        
+        grid.innerHTML = types.map((t, i) => `
+            <div class="panel">
+                <label class="text-[10px] uppercase font-bold text-gray-400">${t}</label>
+                <div class="mt-2">
+                    ${createSearchField(i, 'Leader', players, defaultLeaders[i])}
+                    <select class="heroes" onchange="update()">
+                        <option value="">Sélectionner Héros...</option>
+                        ${heroesList.map(h => `<option value="${h}">${h}</option>`).join('')}
+                    </select>
+                    
+                    <div class="ratio-container">
+                        <input type="number" class="r1" placeholder="00" min="0" max="100" oninput="update()">
+                        <input type="number" class="r2" placeholder="00" min="0" max="100" oninput="update()">
+                        <input type="number" class="r3" placeholder="00" min="0" max="100" oninput="update()">
+                    </div>
+
+                    ${[1,2,3,4].map(j => createSearchField(i, 'Joiner' + j, players)).join('')}
+                </div>
+                <div class="final-box" id="out-${i}"></div>
+                <button class="bg-blue-600 w-full mt-2 py-1 rounded text-[10px] font-bold" onclick="copy(${i})">COPIER</button>
+            </div>
+        `).join('');
+        
+        update();
+    }
+
+    // Version unique et correcte de la fonction
+    function createSearchField(panelId, label, list, defaultValue = "") {
+        return `
+            <div class="field-group">
+                <input type="text" value="${defaultValue}" placeholder="${label}..." oninput="filter(this, ${JSON.stringify(list).replace(/"/g, "'")})" onfocus="this.nextElementSibling.style.display='block'" onblur="setTimeout(()=>this.nextElementSibling.style.display='none', 200)">
+                <div class="suggestions"></div>
+            </div>`;
+    }
+
+    function filter(input, list) {
+        const term = input.value.toLowerCase();
+        const listContainer = input.nextElementSibling;
+        listContainer.innerHTML = list.filter(item => item.toLowerCase().includes(term))
+            .map(item => `<div onclick="select('${item}', this.parentElement.previousElementSibling)">${item}</div>`).join('');
+        update();
+    }
+
+    function select(val, input) {
+        input.value = val;
+        input.nextElementSibling.style.display = 'none';
+        update();
+    }
+
+    function update() {
+        document.querySelectorAll('.panel').forEach((p, i) => {
+            const leader = p.querySelector('input[placeholder="Leader..."]').value;
+            const hero = p.querySelector('.heroes').value;
+            const r1 = p.querySelector('.r1').value || '00';
+            const r2 = p.querySelector('.r2').value || '00';
+            const r3 = p.querySelector('.r3').value || '00';
+            const j1 = p.querySelector('input[placeholder="Joiner1..."]').value;
+            const j2 = p.querySelector('input[placeholder="Joiner2..."]').value;
+            const j3 = p.querySelector('input[placeholder="Joiner3..."]').value;
+            const j4 = p.querySelector('input[placeholder="Joiner4..."]').value;
+
+            const template = `⚔️ RALLY ${leader || '[LEADER]'}
+🔥 - ${hero || '[HEROES]'}
+● Troops ${r1}-${r2}-${r3}
+
+⚔️ RALLY JOINER
+🔥 - ${j1 || '[JOINER1]'}
+🔥 - ${j2 || '[JOINER2]'}
+🔥 - ${j3 || '[JOINER3]'}
+🔥 - ${j4 || '[JOINER4]'}
+Join after w/ Howard`;
+
+            document.getElementById('out-' + i).textContent = template;
+        });
+    }
+
+    function copy(i) {
+        navigator.clipboard.writeText(document.getElementById('out-' + i).textContent);
+        alert("Copié !");
+    }
+</script>
+</body>
+</html>
