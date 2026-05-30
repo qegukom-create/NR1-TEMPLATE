@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NR1 - Générateur</title>
+    <title>NR1 - Alliance Generator</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background: #111827; color: #f3f4f6; font-family: sans-serif; }
@@ -18,15 +18,15 @@
 
 <div class="container mt-4">
     <div id="menu-selection">
-        <h4 class="text-center mb-4">CHOISIR L'ÉVÉNEMENT</h4>
+        <h4 class="text-center mb-4">CHOOSE EVENT</h4>
         <button class="btn btn-primary btn-main" onclick="loadGenerator('castle')">⚔️ CASTLE BATTLE</button>
         <button class="btn btn-warning btn-main" onclick="loadGenerator('bear')">🐻 BEAR TRAP</button>
-        <button class="btn btn-success btn-main" onclick="loadGenerator('pets')">🐾 PETS STRATÉGIE</button>
-        <button class="btn btn-info btn-main" onclick="loadGenerator('expert')">🛡️ EXPERT STRATÉGIE</button>
+        <button class="btn btn-success btn-main" onclick="loadGenerator('pets')">🐾 PETS STRATEGY</button>
+        <button class="btn btn-info btn-main" onclick="loadGenerator('expert')">🛡️ EXPERT STRATEGY</button>
     </div>
 
     <div id="app-container" class="menu-hidden">
-        <button class="btn btn-secondary btn-sm mb-3" onclick="location.reload()">⬅️ RETOUR</button>
+        <button class="btn btn-secondary btn-sm mb-3" onclick="location.reload()">⬅️ BACK</button>
         <div id="main-grid"></div>
     </div>
 </div>
@@ -44,16 +44,30 @@
                 <div class="panel">
                     <label class="fw-bold">RALLY ${i + 1}</label>
                     <input type="text" placeholder="Leader..." oninput="update('castle')">
-                    <select class="heroes" onchange="update('castle')"><option value="">Héros...</option>${heroesList.map(h => `<option value="${h}">${h}</option>`).join('')}</select>
+                    <select class="heroes" onchange="update('castle')"><option value="">Select Hero...</option>${heroesList.map(h => `<option value="${h}">${h}</option>`).join('')}</select>
                     <div class="final-box" id="out-${i}"></div>
-                    <button class="btn btn-outline-light w-100 mt-2" onclick="copy(${i})">COPIER</button>
+                    <button class="btn btn-outline-light w-100 mt-2" onclick="copy(${i})">COPY</button>
                 </div>`).join('');
+        } else if (type === 'expert') {
+            grid.innerHTML = `
+                <div class="panel">
+                    <label class="fw-bold text-uppercase">F2P (1/2)</label><div class="final-box" id="out-0"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(0)">COPY F2P 1</button>
+                </div>
+                <div class="panel">
+                    <label class="fw-bold text-uppercase">F2P (2/2)</label><div class="final-box" id="out-1"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(1)">COPY F2P 2</button>
+                </div>
+                <div class="panel">
+                    <label class="fw-bold text-uppercase">P2W (1/2)</label><div class="final-box" id="out-2"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(2)">COPY P2W 1</button>
+                </div>
+                <div class="panel">
+                    <label class="fw-bold text-uppercase">P2W (2/2)</label><div class="final-box" id="out-3"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(3)">COPY P2W 2</button>
+                </div>`;
         } else {
             grid.innerHTML = `
                 <div class="panel">
-                    <label class="fw-bold text-uppercase">${type}</label>
+                    <label class="fw-bold text-uppercase">${type.replace('_', ' ')}</label>
                     <div class="final-box" id="out-0"></div>
-                    <button class="btn btn-outline-light w-100 mt-2" onclick="copy(0)">COPIER</button>
+                    <button class="btn btn-outline-light w-100 mt-2" onclick="copy(0)">COPY</button>
                 </div>`;
         }
         update(type);
@@ -63,21 +77,24 @@
         if (type === 'castle') {
             document.querySelectorAll('.panel').forEach((p, i) => {
                 const l = p.querySelector('input').value || '[LEADER]';
-                const h = p.querySelector('.heroes').value || '[HÉROS]';
+                const h = p.querySelector('.heroes').value || '[HERO]';
                 document.getElementById('out-' + i).textContent = `⚔️ RALLY ${l}\n🔥 ${h}`;
             });
         } else if (type === 'bear') {
             document.getElementById('out-0').textContent = `🐻 BEAR TRAP\n🔥 Chenko or Amane or Teonwoo\n⚔️ 10K-15K-40K\n🛡️ Total: 65K Max`;
         } else if (type === 'pets') {
-            document.getElementById('out-0').textContent = `🐾 PETS STRATÉGIE\n[Instructions à définir ici]`;
+            document.getElementById('out-0').textContent = `🐾 PETS STRATEGY\n[Instructions here]`;
         } else if (type === 'expert') {
-            document.getElementById('out-0').textContent = `🛡️ EXPERT STRATÉGIE\n[Instructions à définir ici]`;
+            document.getElementById('out-0').textContent = `🛡️ EXPERT STRATEGY (F2P 1/2)\n✔ Focus Pan first (growth)\n✔ Upgrade Research Speed\n✔ Increase March Size\n✔ Train troops consistently\n✔ Gather resources daily\n✔ Unlock Roman (passive)\n✔ Use Valora late game\n✔ Valora Affinity 30\n✔ Unlock Obsession\n✔ Participate in Bear Hunt\n✔ Save Emblems`;
+            document.getElementById('out-1').textContent = `🛡️ EXPERT STRATEGY (F2P 2/2)\n✘ Don’t invest in all Masters\n✘ Don’t waste Emblems early\n✘ Don’t max Roman\n✘ Don’t rush Valora early\n✘ Don’t ignore Pan progression\n✘ Don’t skip Bear Hunt\n✘ Don’t spread resources\n✘ Don’t chase low-value upgrades\n✘ Don’t spend without purpose\n✘ Don’t over-upgrade combat early`;
+            document.getElementById('out-2').textContent = `🛡️ EXPERT STRATEGY (P2W 1/2)\n✔ Rush Valora first\n✔ Push Affinity 30+\n✔ Unlock Obsession ASAP\n✔ Focus Bear Hunt daily\n✔ Max PvP stats early\n✔ Prioritize Infantry Health\n✔ Upgrade Rally Capacity\n✔ Lead rallies often\n✔ Invest heavily in gear/stats\n✔ Use Emblems aggressively`;
+            document.getElementById('out-3').textContent = `🛡️ EXPERT STRATEGY (P2W 2/2)\n✘ Don’t delay Valora\n✘ Don’t play “slow growth”\n✘ Don’t save Emblems too long\n✘ Don’t ignore Bear Hunt\n✘ Don’t focus only economy\n✘ Don’t stay in support role\n✘ Don’t avoid leading rallies\n✘ Don’t spread upgrades evenly\n✘ Don’t under-invest PvP stats`;
         }
     }
 
     function copy(i) {
         navigator.clipboard.writeText(document.getElementById('out-' + i).textContent);
-        alert("Copié !");
+        alert("Copied to clipboard !");
     }
 </script>
 </body>
