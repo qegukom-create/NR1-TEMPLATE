@@ -50,25 +50,16 @@
                 </div>`).join('');
         } else if (type === 'expert') {
             grid.innerHTML = `
-                <div class="panel">
-                    <label class="fw-bold text-uppercase">F2P (1/2)</label><div class="final-box" id="out-0"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(0)">COPY F2P 1</button>
-                </div>
-                <div class="panel">
-                    <label class="fw-bold text-uppercase">F2P (2/2)</label><div class="final-box" id="out-1"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(1)">COPY F2P 2</button>
-                </div>
-                <div class="panel">
-                    <label class="fw-bold text-uppercase">P2W (1/2)</label><div class="final-box" id="out-2"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(2)">COPY P2W 1</button>
-                </div>
-                <div class="panel">
-                    <label class="fw-bold text-uppercase">P2W (2/2)</label><div class="final-box" id="out-3"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(3)">COPY P2W 2</button>
-                </div>`;
-        } else {
+                <div class="panel"><label class="fw-bold text-uppercase">F2P (1/2)</label><div class="final-box" id="out-0"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(0)">COPY F2P 1</button></div>
+                <div class="panel"><label class="fw-bold text-uppercase">F2P (2/2)</label><div class="final-box" id="out-1"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(1)">COPY F2P 2</button></div>
+                <div class="panel"><label class="fw-bold text-uppercase">P2W (1/2)</label><div class="final-box" id="out-2"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(2)">COPY P2W 1</button></div>
+                <div class="panel"><label class="fw-bold text-uppercase">P2W (2/2)</label><div class="final-box" id="out-3"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(3)">COPY P2W 2</button></div>`;
+        } else if (type === 'pets') {
             grid.innerHTML = `
-                <div class="panel">
-                    <label class="fw-bold text-uppercase">${type.replace('_', ' ')}</label>
-                    <div class="final-box" id="out-0"></div>
-                    <button class="btn btn-outline-light w-100 mt-2" onclick="copy(0)">COPY</button>
-                </div>`;
+                <div class="panel"><label class="fw-bold text-uppercase">PETS STRATEGY (1/2)</label><div class="final-box" id="out-0"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(0)">COPY PART 1</button></div>
+                <div class="panel"><label class="fw-bold text-uppercase">PETS STRATEGY (2/2)</label><div class="final-box" id="out-1"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(1)">COPY PART 2</button></div>`;
+        } else {
+            grid.innerHTML = `<div class="panel"><label class="fw-bold text-uppercase">${type.replace('_', ' ')}</label><div class="final-box" id="out-0"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(0)">COPY</button></div>`;
         }
         update(type);
     }
@@ -83,7 +74,8 @@
         } else if (type === 'bear') {
             document.getElementById('out-0').textContent = `🐻 BEAR TRAP\n🔥 Chenko or Amane or Teonwoo\n⚔️ 10K-15K-40K\n🛡️ Total: 65K Max`;
         } else if (type === 'pets') {
-            document.getElementById('out-0').textContent = `🐾 PETS STRATEGY\n[Instructions here]`;
+            document.getElementById('out-0').textContent = `🐾 PET STRATEGY (1/2)\n✔ Priority: Lion (Save resources)\n✔ Lynx: Level 15-20 (Stamina)\n✔ Wolf/Bison: Early buffs only\n✔ Leveling: Prioritize Lion XP/Skills\n✔ Marks: Always save for events\n✔ Common Marks: Use bottom-up\n✔ Adv. Marks: STRICTLY for events`;
+            document.getElementById('out-1').textContent = `🐾 PET STRATEGY (2/2)\n✘ Don’t waste Adv. Marks outside events\n✘ Don’t max low-tier pets early\n✘ Don’t ignore Stamina from Lynx\n✘ Don’t spread Promotion Medallions\n✘ Don’t prioritize refinement over skills\n✘ Don’t use Adv. Marks on Green stats\n✘ Don’t rush Gen 1-2 once Lion is near\n✔ Note: Lion gives True Gold/Charms!`;
         } else if (type === 'expert') {
             document.getElementById('out-0').textContent = `🛡️ EXPERT STRATEGY (F2P 1/2)\n✔ Focus Pan first (growth)\n✔ Upgrade Research Speed\n✔ Increase March Size\n✔ Train troops consistently\n✔ Gather resources daily\n✔ Unlock Roman (passive)\n✔ Use Valora late game\n✔ Valora Affinity 30\n✔ Unlock Obsession\n✔ Participate in Bear Hunt\n✔ Save Emblems`;
             document.getElementById('out-1').textContent = `🛡️ EXPERT STRATEGY (F2P 2/2)\n✘ Don’t invest in all Masters\n✘ Don’t waste Emblems early\n✘ Don’t max Roman\n✘ Don’t rush Valora early\n✘ Don’t ignore Pan progression\n✘ Don’t skip Bear Hunt\n✘ Don’t spread resources\n✘ Don’t chase low-value upgrades\n✘ Don’t spend without purpose\n✘ Don’t over-upgrade combat early`;
