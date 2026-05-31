@@ -3,91 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NR1 - Alliance Generator</title>
+    <title>NR1 - Alliance Hub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background: #111827; color: #f3f4f6; font-family: sans-serif; }
-        .panel { background: #1f2937; padding: 15px; border-radius: 10px; border: 1px solid #374151; margin-bottom: 15px; }
-        input, select { background: #0f172a !important; border: 1px solid #374151 !important; color: white !important; padding: 12px !important; width: 100%; border-radius: 8px; font-size: 16px !important; margin-bottom: 10px; }
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-top: 20px; }
+        .panel { background: #1f2937; padding: 15px; border-radius: 10px; border: 1px solid #374151; position: relative; }
         .final-box { background: #020617; color: #38bdf8; padding: 12px; border-radius: 6px; font-family: monospace; white-space: pre-wrap; font-size: 14px; border: 1px solid #1e293b; min-height: 80px; margin-top: 10px; }
-        .btn-main { padding: 15px !important; font-weight: bold; width: 100%; margin-bottom: 10px; }
-        .menu-hidden { display: none; }
+        .btn-square { width: 110px; height: 110px; font-weight: bold; border-radius: 15px; }
+        .actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; }
+        .btn-action { cursor: pointer; border: none; background: none; font-size: 16px; }
+        .editor-box { background: #1f2937; padding: 20px; border-radius: 10px; border: 1px solid #374151; }
+        input, textarea { background: #0f172a !important; border: 1px solid #374151 !important; color: white !important; }
     </style>
 </head>
 <body>
 
-<div class="container mt-4">
-    <div id="menu-selection">
-        <h4 class="text-center mb-4">CHOOSE EVENT</h4>
-        <button class="btn btn-primary btn-main" onclick="loadGenerator('castle')">⚔️ CASTLE BATTLE</button>
-        <button class="btn btn-warning btn-main" onclick="loadGenerator('bear')">🐻 BEAR TRAP</button>
-        <button class="btn btn-success btn-main" onclick="loadGenerator('pets')">🐾 PETS STRATEGY</button>
-        <button class="btn btn-info btn-main" onclick="loadGenerator('expert')">🛡️ EXPERT STRATEGY</button>
+<div class="container mt-4 text-center">
+    <div class="mb-4">
+        <a href="https://qegukom-create.github.io/NR1-MAIN/" class="btn btn-outline-secondary btn-sm">⬅️ GO TO MAIN</a>
     </div>
 
-    <div id="app-container" class="menu-hidden">
+    <div id="main-menu" class="d-flex justify-content-center gap-3 mb-5">
+        <button class="btn btn-primary btn-square" onclick="navigate('rally')">⚔️<br>RALLY</button>
+        <button class="btn btn-info btn-square" onclick="navigate('strategy')">🛡️<br>STRATEGY</button>
+        <button class="btn btn-warning btn-square" onclick="navigate('event')">🏆<br>EVENT</button>
+    </div>
+
+    <div id="app-container">
         <button class="btn btn-secondary btn-sm mb-3" onclick="location.reload()">⬅️ BACK</button>
-        <div id="main-grid"></div>
+        <div id="dynamic-content"></div>
+        <div id="editor-area" class="mt-4 editor-box d-none"></div>
     </div>
 </div>
 
-<script>
-    const heroesList = ["Jabel", "Quinn", "Chenko", "Zoe", "Howard", "Marlin", "Amane", "Teonwoo"];
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getDatabase, ref, get, set, push, remove, update } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
-    function loadGenerator(type) {
-        document.getElementById('menu-selection').style.display = 'none';
-        document.getElementById('app-container').style.display = 'block';
-        const grid = document.getElementById('main-grid');
+    const firebaseConfig = {
+        apiKey: "AIzaSyA8edMWQreJMKrbS8MuowKZl58x7W5vfBU",
+        authDomain: "nr1-vikings.firebaseapp.com",
+        databaseURL: "https://nr1-vikings-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "nr1-vikings",
+        storageBucket: "nr1-vikings.firebasestorage.app",
+        messagingSenderId: "1042283854890",
+        appId: "1:1042283854890:web:84414b7afed626191ed753"
+    };
+
+    const db = getDatabase(initializeApp(firebaseConfig));
+
+    window.navigate = async (path, subPath = null) => {
+        const content = document.getElementById('dynamic-content');
+        document.getElementById('editor-area').classList.add('d-none');
         
-        if (type === 'castle') {
-            grid.innerHTML = [0,1,2].map(i => `
-                <div class="panel">
-                    <label class="fw-bold">RALLY ${i + 1}</label>
-                    <input type="text" placeholder="Leader..." oninput="update('castle')">
-                    <select class="heroes" onchange="update('castle')"><option value="">Select Hero...</option>${heroesList.map(h => `<option value="${h}">${h}</option>`).join('')}</select>
-                    <div class="final-box" id="out-${i}"></div>
-                    <button class="btn btn-outline-light w-100 mt-2" onclick="copy(${i})">COPY</button>
-                </div>`).join('');
-        } else if (type === 'expert') {
-            grid.innerHTML = `
-                <div class="panel"><label class="fw-bold text-uppercase">F2P (1/2)</label><div class="final-box" id="out-0"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(0)">COPY F2P 1</button></div>
-                <div class="panel"><label class="fw-bold text-uppercase">F2P (2/2)</label><div class="final-box" id="out-1"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(1)">COPY F2P 2</button></div>
-                <div class="panel"><label class="fw-bold text-uppercase">P2W (1/2)</label><div class="final-box" id="out-2"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(2)">COPY P2W 1</button></div>
-                <div class="panel"><label class="fw-bold text-uppercase">P2W (2/2)</label><div class="final-box" id="out-3"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(3)">COPY P2W 2</button></div>`;
-        } else if (type === 'pets') {
-            grid.innerHTML = `
-                <div class="panel"><label class="fw-bold text-uppercase">PETS STRATEGY (1/2)</label><div class="final-box" id="out-0"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(0)">COPY PART 1</button></div>
-                <div class="panel"><label class="fw-bold text-uppercase">PETS STRATEGY (2/2)</label><div class="final-box" id="out-1"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(1)">COPY PART 2</button></div>`;
+        const snapshot = await get(ref(db, subPath ? `templates/${path}/${subPath}` : `templates/${path}`));
+        const data = snapshot.val() || {};
+        
+        content.innerHTML = `<h3 class="mb-4">${(subPath || path).toUpperCase()}</h3>`;
+        
+        if (!subPath) {
+            for (let key in data) {
+                content.innerHTML += `<button class="btn btn-outline-light m-2" onclick="navigate('${path}', '${key}')">${key}</button>`;
+            }
+            content.innerHTML += `<br><button class="btn btn-success mt-4" onclick="showEditor('sub', '${path}')">+ NEW SUB-CATEGORY</button>`;
         } else {
-            grid.innerHTML = `<div class="panel"><label class="fw-bold text-uppercase">${type.replace('_', ' ')}</label><div class="final-box" id="out-0"></div><button class="btn btn-outline-light w-100 mt-2" onclick="copy(0)">COPY</button></div>`;
+            let htmlContent = `<div class="grid-container">`;
+            for (let key in data) {
+                const item = data[key];
+                if (item && item.content) {
+                    htmlContent += `
+                        <div class="panel">
+                            <div class="actions">
+                                <button class="btn-action" onclick="editItem('${path}', '${subPath}', '${key}', '${encodeURIComponent(item.label)}', '${encodeURIComponent(item.content)}')">✏️</button>
+                                <button class="btn-action" onclick="deleteItem('${path}/${subPath}', '${key}')">✖</button>
+                            </div>
+                            <div class="fw-bold mb-2 text-start">${item.label || ''}</div>
+                            <div class="final-box">${item.content}</div>
+                            <button class="btn btn-outline-light w-100 mt-3" onclick="navigator.clipboard.writeText(\`${item.content.replace(/`/g, '\\`')}\`)">COPY</button>
+                        </div>`;
+                }
+            }
+            htmlContent += `</div><button class="btn btn-success mt-4" onclick="showEditor('tpl', '${path}', '${subPath}')">+ NEW TEMPLATE</button>`;
+            content.innerHTML += htmlContent;
         }
-        update(type);
-    }
+    };
 
-    function update(type) {
-        if (type === 'castle') {
-            document.querySelectorAll('.panel').forEach((p, i) => {
-                const l = p.querySelector('input').value || '[LEADER]';
-                const h = p.querySelector('.heroes').value || '[HERO]';
-                document.getElementById('out-' + i).textContent = `⚔️ RALLY ${l}\n🔥 ${h}`;
-            });
-        } else if (type === 'bear') {
-            document.getElementById('out-0').textContent = `🐻 BEAR TRAP\n🔥 Chenko or Amane or Teonwoo\n⚔️ 10K-15K-40K\n🛡️ Total: 65K Max`;
-        } else if (type === 'pets') {
-            document.getElementById('out-0').textContent = `🐾 PET STRATEGY (1/2)\n✔ Priority: Lion (Save resources)\n✔ Lynx: Level 15-20 (Stamina)\n✔ Wolf/Bison: Early buffs only\n✔ Leveling: Prioritize Lion XP/Skills\n✔ Marks: Always save for events\n✔ Common Marks: Use bottom-up\n✔ Adv. Marks: STRICTLY for events`;
-            document.getElementById('out-1').textContent = `🐾 PET STRATEGY (2/2)\n✘ Don’t waste Adv. Marks outside events\n✘ Don’t max low-tier pets early\n✘ Don’t ignore Stamina from Lynx\n✘ Don’t spread Promotion Medallions\n✘ Don’t prioritize refinement over skills\n✘ Don’t use Adv. Marks on Green stats\n✘ Don’t rush Gen 1-2 once Lion is near\n✔ Note: Lion gives True Gold/Charms!`;
-        } else if (type === 'expert') {
-            document.getElementById('out-0').textContent = `🛡️ EXPERT STRATEGY (F2P 1/2)\n✔ Focus Pan first (growth)\n✔ Upgrade Research Speed\n✔ Increase March Size\n✔ Train troops consistently\n✔ Gather resources daily\n✔ Unlock Roman (passive)\n✔ Use Valora late game\n✔ Valora Affinity 30\n✔ Unlock Obsession\n✔ Participate in Bear Hunt\n✔ Save Emblems`;
-            document.getElementById('out-1').textContent = `🛡️ EXPERT STRATEGY (F2P 2/2)\n✘ Don’t invest in all Masters\n✘ Don’t waste Emblems early\n✘ Don’t max Roman\n✘ Don’t rush Valora early\n✘ Don’t ignore Pan progression\n✘ Don’t skip Bear Hunt\n✘ Don’t spread resources\n✘ Don’t chase low-value upgrades\n✘ Don’t spend without purpose\n✘ Don’t over-upgrade combat early`;
-            document.getElementById('out-2').textContent = `🛡️ EXPERT STRATEGY (P2W 1/2)\n✔ Rush Valora first\n✔ Push Affinity 30+\n✔ Unlock Obsession ASAP\n✔ Focus Bear Hunt daily\n✔ Max PvP stats early\n✔ Prioritize Infantry Health\n✔ Upgrade Rally Capacity\n✔ Lead rallies often\n✔ Invest heavily in gear/stats\n✔ Use Emblems aggressively`;
-            document.getElementById('out-3').textContent = `🛡️ EXPERT STRATEGY (P2W 2/2)\n✘ Don’t delay Valora\n✘ Don’t play “slow growth”\n✘ Don’t save Emblems too long\n✘ Don’t ignore Bear Hunt\n✘ Don’t focus only economy\n✘ Don’t stay in support role\n✘ Don’t avoid leading rallies\n✘ Don’t spread upgrades evenly\n✘ Don’t under-invest PvP stats`;
+    window.showEditor = (type, path, subPath = null, key = null, label = '', content = '') => {
+        const editor = document.getElementById('editor-area');
+        editor.classList.remove('d-none');
+        editor.innerHTML = `
+            <input id="new-name" value="${label}" placeholder="Titre du template" class="form-control mb-3">
+            <textarea id="new-content" class="form-control mb-3" rows="4" placeholder="Contenu du message...">${content}</textarea>
+            <button class="btn btn-primary w-100" onclick="saveData('${type}', '${path}', '${subPath}', '${key || ''}')">SAVE TO FIREBASE</button>
+        `;
+    };
+
+    window.editItem = (path, subPath, key, label, content) => {
+        showEditor('tpl', path, subPath, key, decodeURIComponent(label), decodeURIComponent(content));
+    };
+
+    window.saveData = async (type, path, subPath, key) => {
+        const label = document.getElementById('new-name').value;
+        const content = document.getElementById('new-content').value;
+        if (type === 'sub') {
+            await set(ref(db, `templates/${path}/${label}/init`), { label: "Init", content: "..." });
+        } else if (key) {
+            await update(ref(db, `templates/${path}/${subPath}/${key}`), { label, content });
+        } else {
+            await push(ref(db, `templates/${path}/${subPath}`), { label, content });
         }
-    }
+        navigate(path, subPath);
+    };
 
-    function copy(i) {
-        navigator.clipboard.writeText(document.getElementById('out-' + i).textContent);
-        alert("Copied to clipboard !");
-    }
+    window.deleteItem = async (path, key) => {
+        if (confirm("Supprimer cet élément ?")) {
+            await remove(ref(db, `templates/${path}/${key}`));
+            location.reload();
+        }
+    };
 </script>
 </body>
 </html>
